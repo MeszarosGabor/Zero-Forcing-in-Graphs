@@ -15,17 +15,17 @@ class ZeroForcing:
 				self.passive_black.add(node)
 		self.active_black = self.forcing_set - self.passive_black
 		self.white = set(range(self.n)) - self.active_black - self.passive_black
-
+		
 	def print_sets(self):
 		print "white vertices: ", list(self.white)
 		print "active black vertices: ", list(self.active_black)
 		print "passive black vertices: ", list(self.passive_black)
-
-
+		
+		
 	def print_black_neighbors(self):
 		for node in xrange(self.n):
 			print "node ", node, " has ", self.black_neighbor_counter[node], " black neighbors"
-
+			
 	def round(self):
 		temp_newblack_collector = set()
 		for white_node in self.white:
@@ -46,7 +46,7 @@ class ZeroForcing:
 		self.active_black -= temp_passiveblack_collector
 		self.passive_black = self.passive_black | temp_passiveblack_collector
 		return len(temp_newblack_collector)
-
+				
 	def simulate_forcing(self, logging):
 		round_counter = 0
 		new_vertex_forced = True
@@ -64,8 +64,8 @@ class ZeroForcing:
 		else:
 			#print "Forcing stopped in round ", round_counter, "the initial set", self.forcing_set, " does not force the graph"
 			return (False, round_counter - 1)
-
-def calculate_zero_forcing_nr(neighbors, showMinSets = False):
+		
+def calculate_zero_forcing_nr(neighbors):
 	minimum_sets = []
 	stop_search = False
 	for subset_size in range(1,len(neighbors)):
@@ -76,5 +76,8 @@ def calculate_zero_forcing_nr(neighbors, showMinSets = False):
 				minimum_sets.append(subset)
 				stop_search = True
 		if stop_search:
-			return sorted(minimum_sets) if showMinSets else len(minimum_sets[0])
-
+			return sorted(minimum_sets)
+		
+		
+		
+		
