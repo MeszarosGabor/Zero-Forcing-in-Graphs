@@ -1,4 +1,4 @@
-import subset_generator
+from itertools import combinations
 
 class ZeroForcing:
 	def __init__(self, neighbors, forcing_set):
@@ -69,7 +69,7 @@ def calculate_zero_forcing_nr(neighbors, showMinSets = False):
 	minimum_sets = []
 	stop_search = False
 	for subset_size in range(1,len(neighbors)):
-		for subset in subset_generator.generate_given_sized_subsets(list(range(len(neighbors))),subset_size):
+                for subset in combinations(range(len(neighbors)),subset_size):
 			testing = ZeroForcing(neighbors, set(subset))
 			if testing.simulate_forcing(False)[0]:
 				#print "minimum forcing set ", subset, " of size", subset_size," found!"
