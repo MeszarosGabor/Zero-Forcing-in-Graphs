@@ -30,6 +30,6 @@ def zf_unit_test(logging = False):
 	if logging:
 		print "Test Succeeded" if success else "Test Failed" 
 	return success
-			
+zf_unit_test(True)			
 	 
 				
