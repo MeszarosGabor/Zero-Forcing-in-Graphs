@@ -17,17 +17,20 @@ forcing_nr = {
 	"K_4"      : 3
 }
 
-def zf_unit_test(logging = False):
+def zf_unit_test(logging = True):
 	success = True
 	for graph, neighbors in graphs.items():
 		zf_calculated = zero_forcing.calculate_zero_forcing_nr(neighbors)
 		if  zf_calculated != forcing_nr[graph]:
 			success = False
 			if logging:
-				print "   --> Test failed for graph ", graph,": zf_calculated = ", zf_calculated, "zf_real = ", forcing_nr[graph]
+				print("   --> Test failed for graph ", graph,
+				      ": zf_calculated = ", zf_calculated,
+					  "zf_real = ", forcing_nr[graph])
 		elif logging:
-				print "   --> Test succeeded for graph ", graph,": zf = ", zf_calculated
+				print("   --> Test succeeded for graph ", graph,
+				      ": zf = ", zf_calculated)
 	if logging:
-		print "Test Succeeded" if success else "Test Failed" 
+		print("Test Succeeded" if success else "Test Failed") 
 	return success
 zf_unit_test(True)			
