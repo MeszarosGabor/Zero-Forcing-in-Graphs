@@ -66,7 +66,7 @@ def calculate_zero_forcing_nr(neighbors, showMinSets = False):
     minimum_sets = []
     stop_search = False
     for subset_size in range(1,len(neighbors)):
-        print("    -> Checking subsets of size {}".format(subset_size))
+        #print("    -> Checking subsets of size {}".format(subset_size))
         for subset in combinations(range(len(neighbors)), subset_size):
             testing = ZeroForcing(neighbors, set(subset))
             if testing.simulate_forcing(False)[0]:
