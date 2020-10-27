@@ -58,7 +58,7 @@ def search(n, d, iterations):
     best_G = None
     for i in tqdm(range(iterations)):
         G = nx.random_regular_graph(d,n)
-        all_neighbors = [set(G.neighbors(x)) for x in G.nodes]
+        all_neighbors = [set(G.neighbors(x)) for x in sorted(list(G.nodes))]
         if is_connected(all_neighbors):
             zfn = calculate_zero_forcing_nr(all_neighbors)
             zfr = zfn / n
