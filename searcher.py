@@ -35,7 +35,7 @@ def get_graph_from_neighbors(neighbors: typing.Dict[int, typing.List[int]]) -> n
     return nx.from_dict_of_lists(neighbors)
 
 
-def get_graph_from_path(path):
+def get_graph_from_path(path: str):
     return get_graph_from_neighbors(get_neighbors_from_path(path))
 
 
@@ -69,8 +69,9 @@ def search(n: int, d: int, iterations: int):
     best_G = None
     for i in tqdm(range(iterations)):
         G = nx.random_regular_graph(d, n)
+        # TODO: this is most likely natively supported in networkx
         all_neighbors = {
-            x: {int(y) for y in G.neighbors(x)} for x in sorted(list(G.nodes))
+            int(x): {int(y) for y in G.neighbors(x)} for x in sorted(list(G.nodes))
         }
         if is_connected(all_neighbors):
             zfn = calculate_zero_forcing_nr(all_neighbors)
@@ -82,13 +83,16 @@ def search(n: int, d: int, iterations: int):
     return (best_G, best_neighbors, best_zfr)
 
 
-def save_result(neighbors, ratio, result_dir):
+def save_result(neighbors: typing.Dict[int, typing.Set[int]],
+                ratio: float,
+                result_dir: str,
+) -> None:
     logger.debug(f"Reporting ratio: {ratio}")
     filename = f"zf_{len(neighbors)}_{ratio}_{uuid.uuid4()}"
     filepath = os.path.join(result_dir, filename)
 
     logger.debug(f" Writing result to {filepath}")
-    jsonified_neighbors = {k: list(v) for k, v in neighbors.items()}
+    jsonified_neighbors = {int(k): list(v) for k, v in neighbors.items()}
     with open(filepath, 'w') as handle:
         json.dump(jsonified_neighbors, handle)
 
@@ -100,17 +104,25 @@ def save_result(neighbors, ratio, result_dir):
 @click.option("-i", "--iterations", type=int, help="Number of iterations")
 @click.option("-p", "result_dir", type=str, help="Path to result folder")
 @click.option("-l", "--loglevel", default="WARNING", type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR"], case_sensitive=False))
-
-def main(graph_size_min, graph_size_max, rounds, iterations, result_dir, loglevel):
+def main(
+    graph_size_min: int,
+    graph_size_max: int,
+    rounds: int,
+    iterations: int,
+    result_dir: str,
+    loglevel: str
+) -> None:
     logging.basicConfig(stream=sys.stdout, level=logging.__dict__.get(loglevel))
     round_cnt = 0
     while not rounds or round_cnt < rounds:
         logger.info(f"Running round #{round_cnt + 1}")
         graph_size = random.choice(list(range(graph_size_min // 2 * 2 , graph_size_max + 2, 2)))
+        logger.debug(f"checking graph size {graph_size}")
+        
         existing_graph_paths = get_full_paths_for_graph_size(result_dir, graph_size)
         existing_graphs = [get_graph_from_neighbors(get_neighbors_from_path(path))
                            for path in existing_graph_paths]
-        logger.debug(f"checking graph size {graph_size}")
+        
         g, neighbors, zfr = search(graph_size, 3, iterations)
         if is_new_graph(existing_graphs, g):
             logger.debug(f"New graph found with zfr {zfr}")

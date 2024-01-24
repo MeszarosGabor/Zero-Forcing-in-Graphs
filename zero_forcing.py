@@ -1,16 +1,18 @@
 import logging
+import typing
 from itertools import combinations
 
 logger = logging.getLogger(__name__)
 
 
 class ZeroForcing:
-    def __init__(self, neighbors, forcing_set):
+    def __init__(self, neighbors: typing.Dict[int, typing.Set[int]], forcing_set: typing.Set[int]):
         self.n = len(neighbors)
         self.neighbors = neighbors
         self.forcing_set = forcing_set
         self.black_neighbor_counter = [0 for x in range(0, self.n)]
         self.passive_black = set()
+
         for node in self.forcing_set:
             for neighbor in self.neighbors[node]:
                 self.black_neighbor_counter[neighbor] += 1
@@ -35,17 +37,21 @@ class ZeroForcing:
                 if self.black_neighbor_counter[neighbor] == (len(self.neighbors[neighbor]) - 1):
                     temp_newblack_collector.add(white_node)
                     break
+
         self.white -= temp_newblack_collector
         self.active_black = self.active_black | temp_newblack_collector
+
         for new_black_node in temp_newblack_collector:
             for neighbor in self.neighbors[new_black_node]:
                 self.black_neighbor_counter[neighbor] += 1
+        
         temp_passiveblack_collector = set()
         for node in self.active_black:
             if self.black_neighbor_counter[node] == len(self.neighbors[node]):
                 temp_passiveblack_collector.add(node)
         self.active_black -= temp_passiveblack_collector
         self.passive_black = self.passive_black | temp_passiveblack_collector
+
         return len(temp_newblack_collector)
 
     def simulate_forcing(self):
@@ -68,7 +74,7 @@ class ZeroForcing:
             return (False, round_counter - 1)
 
 
-def calculate_zero_forcing_nr(neighbors, showMinSets=False):
+def calculate_zero_forcing_nr(neighbors: typing.Dict[int, typing.Set[int]], showMinSets: bool=False):
     minimum_sets = []
     stop_search = False
     for subset_size in range(1, len(neighbors)):
