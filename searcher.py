@@ -1,8 +1,10 @@
 import json
+import logging
 import os
 import random
 import typing
 import uuid
+import sys
 from collections import deque
 
 import click
@@ -12,10 +14,14 @@ from tqdm import tqdm
 from zero_forcing import calculate_zero_forcing_nr
 
 
+logger = logging.getLogger(__name__)
+
+
+
 def get_full_paths_for_graph_size(result_dir: str, size: int) -> typing.List[str]:
     paths = [os.path.join(result_dir, f) for f in os.listdir(result_dir)
             if f'zf_{size}' in f]
-    print(f"Loaded {len(paths)} paths with size {size} from {result_dir}")
+    logger.info(f"Loaded {len(paths)} paths with size {size} from {result_dir}")
     return paths
 
 
@@ -77,11 +83,11 @@ def search(n: int, d: int, iterations: int):
 
 
 def save_result(neighbors, ratio, result_dir):
-    print(f"Reporting ratio: {ratio}")
+    logger.debug(f"Reporting ratio: {ratio}")
     filename = f"zf_{len(neighbors)}_{ratio}_{uuid.uuid4()}"
     filepath = os.path.join(result_dir, filename)
 
-    print(f" Writing result to {filepath}")
+    logger.debug(f" Writing result to {filepath}")
     jsonified_neighbors = {k: list(v) for k, v in neighbors.items()}
     with open(filepath, 'w') as handle:
         json.dump(jsonified_neighbors, handle)
@@ -93,23 +99,26 @@ def save_result(neighbors, ratio, result_dir):
 @click.option("-r", "--rounds", type=int, default=None, help="Number of rounds to perform (default is infinite)")
 @click.option("-i", "--iterations", type=int, help="Number of iterations")
 @click.option("-p", "result_dir", type=str, help="Path to result folder")
-def main(graph_size_min, graph_size_max, rounds, iterations, result_dir):
+@click.option("-l", "--loglevel", default="WARNING", type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR"], case_sensitive=False))
 
+def main(graph_size_min, graph_size_max, rounds, iterations, result_dir, loglevel):
+    logging.basicConfig(stream=sys.stdout, level=logging.__dict__.get(loglevel))
     round_cnt = 0
     while not rounds or round_cnt < rounds:
+        logger.info(f"Running round #{round_cnt + 1}")
         graph_size = random.choice(list(range(graph_size_min // 2 * 2 , graph_size_max + 2, 2)))
         existing_graph_paths = get_full_paths_for_graph_size(result_dir, graph_size)
         existing_graphs = [get_graph_from_neighbors(get_neighbors_from_path(path))
                            for path in existing_graph_paths]
-        print(f"checking graph size {graph_size}")
+        logger.debug(f"checking graph size {graph_size}")
         g, neighbors, zfr = search(graph_size, 3, iterations)
         if is_new_graph(existing_graphs, g):
-            print(f"New graph found with zfr {zfr}")
+            logger.debug(f"New graph found with zfr {zfr}")
             existing_graphs.append(g)
             save_result(neighbors, zfr, result_dir)
         else:
-            print(f"Duplicate found with zfr {zfr}")
-        print('Cycle finished.')
+            logger.debug(f"Duplicate found with zfr {zfr}")
+        logger.debug('Cycle finished.')
         round_cnt += 1
 
 
