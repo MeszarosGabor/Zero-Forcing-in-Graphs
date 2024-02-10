@@ -57,6 +57,7 @@ class ZeroForcing:
     def simulate_forcing(self):
         round_counter = 0
         new_vertex_forced = True
+
         while new_vertex_forced:
             new_vertex_forced = self.simulate_round()
             round_counter += 1
